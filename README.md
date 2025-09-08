@@ -21,3 +21,20 @@ Jawaban:
     10) Mencoba untuk menjalankan server di lokal dan melihat bahwa tampilan sudah sesuai dengan yang diinginkan.
     11) Membuat repository git baru dan menginisialiasi git pada proyek ini.
     12) Melakukan push ke github dan deployment ke pws.
+2. Gambar bagan: https://drive.google.com/file/d/176C6_cgHF_CaqgjoJ0wQZesNhr4aXy9M/view?usp=sharing
+   Penjelasan:
+   Ketika cliet mengirimkan request ke aplikasi, maka server akan meneruskan request ke file urls. File urls.py akan mengecek endpoint mana yang ingin diakses oleh client dan menjalankan fungsi view yang ada pada file views.py yang sesuai untuk endpoint tersebut. Fungsi view tersebut dapat melakukan pembacaan / penulisan data yang akan diteruskan ke file models.py sesuai dengan model yang berkaitan. Models.py akan mengembalikan data-data yang diinginkan ke views.py untuk selanjutnya dioper ke template html. Template akan dirender bersama data tersebut, lalu menghasilkan response dalam bentuk halaman web yang ditampilkan kembali ke layar client.
+3. Dalam proyek django, file settings.py berisikan konfigurasi-konfigurasi dari instalasi django. Dokumen ini mengatur bagaimana pengaturan-pengaturan
+   tersebut bekerja dan apa yang boleh diubah. Variabel-variabel yang ada pada file tersebut boleh diubah sesuai keperluan proyek. Contohnya, pada proyek ini saya merubah variabel ALLOWED_HOST dengan menambahkan string localhost dan link pws. Variabel ALLOWED_HOST sendiri mengatur domain-domain yang berhak / diperbolehkan untuk mengakses server. Saya juga mengubah variabel DATABASES agar proyek mengakses database yang berbeda pada localhost dan pws dan menambahkan string main di variabel INSTALLED_APPS.
+4. Migrasi database pada django membaca perubahan model-model yang ada pada models.py dan menerapkannya pada database. Setelah merubah / menambahkan model 
+   pada models.py, kita bisa menjalankan perintah 'python manage.py makemigrations' pada terminal untuk django membaca perubahan, membuat file migrasi di direktori 'migrations/', dan mengisi file tersebut dengan intsruksi python untuk merubah struktur database nantinya. Setelah itu kita jalankan 'python manage.py migrate' dimana django akan menerjermahkan instruksi-instruksi yang ada pada file migrasi ke perintah-perintah SQL untuk mengeksekusi perubahan struktur database. Setelah semua perubahan dieksekusi, django akan membuat catatan di tabel khusus bernama django_migrations sehingga django tahu perubahan mana yang sudah pernah dijalankan.
+5. Menurut saya, django cocok untuk dijadikan permulaan pembelajaran pengembangan perangkat lunak karena beberapa hal berikut:
+   1) Proses instalasi yang relatif lebih singkat dibanding framework-framework pada bahasa pemrograman lain.
+   2) Interaksi dengan database yang mudah sehingga pemula tidak perlu mempelajari dan membuat perintah-perintah SQL.
+   3) Menggunakan arsitektur MVT yang melatih pengembang untuk berpikir secara struktural dalam membangun dan menentukan model-model yang ada, 
+      endpoints, fungsi-fungsi view, dan tampilannya pada pengguna.
+   4) Bahasa pemrograman python sendiri yang relatif lebih mudah dipelajari dan dipahami dibanding bahasa-bahasa pemrograman lain sehingga pengembang 
+      bisa mengetahui fungsi / kegunaan dari suatu nama file, fungsi bawaan, atribut dan keyword-keyword lain hanya dengan mengetahui arti dari kosakatanya.
+   5) Terdapat fitur bawaan seperti admin panel dimana pengembang dapat melihat isi dari model-model pada database dan fitur autentikasi usernya yang sudah
+      dibuat langsung oleh django.
+6. Tidak ada, sudah cukup baik.
