@@ -1,14 +1,45 @@
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BliBola</title>
-</head>
-<body>
-    <h1>{{ applicationName }}</h1>
-    <h4>Nama: </h4>
-    <p>{{ nama }}</p>
-    <h4>Kelas: </h4>
-    <p>{{ kelas }}</p>
-</body> 
-</html>
+ {% extends 'base.html' %}
+ {% block content %}
+
+<h1>{{ applicationName }}</h1>
+
+<h4>Nama: </h4>
+<p>{{ nama }}</p>
+
+<h4>Kelas: </h4>
+<p>{{ kelas }}</p>
+
+<a href="{% url 'main:create_product' %}">
+  <button>+ Add Product</button>
+</a>
+
+<hr>
+{% if not product_list %}
+<p>Toko belum memiliki produk.</p>
+{% else %}
+
+{% for product in product_list %}
+<h2><a href="{% url 'main:show_product'}">{{ product.name }}</a></h2>
+<img src="{{ product.thumbnail }}" alt="{{ product.name }}" width="300" height="250">
+
+<h3>Rp{{ product.price }}</h3>
+{% if product.is_featured %}
+<h4>Featured!!</h4>
+{% endif %}
+
+<p>
+    <b>{{ product.category }} </b>
+    <b>| Stock: {{ product.stock }} </b>
+    <b>| Rating: {{ product.rating }}</b>
+</p>
+<p>{{ product.description|truncatewords:25 }}...</p>
+<p>
+    <a href="{% url 'main:show_product' product.id %}">
+        <button>See Details</button>
+    </a>
+</p>
+<hr>
+{% endfor %}
+{% endif %}
+
+{% endblock content %}

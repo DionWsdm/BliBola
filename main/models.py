@@ -1,4 +1,5 @@
 from django.db import models
+import uuid
 
 # Create your models here.
 class Product(models.Model):
@@ -11,7 +12,7 @@ class Product(models.Model):
         ("merch", "Merch"), 
         ("tools", "Tools")
         ]
-    id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     price = models.IntegerField()
     description = models.TextField()
@@ -19,4 +20,5 @@ class Product(models.Model):
     category = models.CharField(choices=CATEGORY_CHOICES)
     is_featured = models.BooleanField()
     rating = models.FloatField(default=5)
+    stock = models.IntegerField(default=100)
 
