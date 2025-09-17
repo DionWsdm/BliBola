@@ -21,4 +21,5 @@ class Product(models.Model):
     is_featured = models.BooleanField()
     rating = models.FloatField(default=5)
     stock = models.IntegerField(default=100)
+    
 
