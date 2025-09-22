@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 import uuid
 
 # Create your models here.
@@ -20,5 +21,6 @@ class Product(models.Model):
     category = models.CharField(choices=CATEGORY_CHOICES)
     is_featured = models.BooleanField()
     stock = models.IntegerField(default=100)
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE, null=True)
 
 
