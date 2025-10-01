@@ -8,6 +8,7 @@
             <p class="w-[250px] text-xl">{{ product.name }}</p>
             <a href="{% url 'main:show_product' product.id %}" class="w-[100px] border-blue-700 border py-2 px-2 rounded-lg text-blue-700" >View Detail</a>
         </div>
+        <p class="text-xl">Stock: {{ product.stock }}</p>
         <p class="text-xl font-bold">IDR {{ product.price }}</p>
         <div class="pt-5 border-t border-[#4A4A4A]">
             {{ product.description|truncatewords:20 }} ...
