@@ -1,10 +1,12 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block meta %}
-<title>Create Product - Football Product</title>
+<title>Edit Product - Football Product</title>
 {% endblock meta %}
 
 {% block content %}
-<div class="bg-w-full min-h-screen bg-[#181818]">
+<div class="bg-[#181818] w-full min-h-screen">
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-white">
     
     <!-- Back Navigation -->
@@ -17,8 +19,8 @@
     <!-- Form -->
     <div class="bg-[#2A2A2A] rounded-lg border border-[#4A4A4A] p-6 sm:p-8 form-style">
       <div class="mb-8">
-        <h1 class="text-2xl font-bold mb-2">Create New Product</h1>
-        <p class="">Share your football Product and stories with the community</p>
+        <h1 class="text-2xl font-bold mb-2">Edit Product</h1>
+        <p class="">Update your football Product and stories</p>
       </div>
       
       <form method="POST" class="space-y-6">
@@ -32,7 +34,7 @@
               {{ field }}
             </div>
             {% if field.help_text %}
-              <p class="mt-1 text-sm text-gray-500">{{ field.help_text }}</p>
+              <p class="mt-1 text-sm">{{ field.help_text }}</p>
             {% endif %}
             {% for error in field.errors %}
               <p class="mt-1 text-sm text-red-600">{{ error }}</p>
@@ -45,7 +47,7 @@
             Cancel
           </a>
           <button type="submit" class="order-1 sm:order-2 flex-1 bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition-colors">
-            Publish Product
+            Update Product
           </button>
         </div>
       </form>

@@ -11,6 +11,24 @@ from django.urls import reverse
 import datetime
 
 # Create your views here.
+def edit_product(request, product_id):
+    product = get_object_or_404(Product, pk=product_id)
+    form = ProductForm(request.POST or None, instance=product)
+    if form.is_valid() and request.method == 'POST':
+        form.save()
+        return redirect('main:show_main')
+
+    context = {
+        'form': form
+    }
+
+    return render(request, "edit_product.html", context)
+
+def delete_product(request, product_id):
+    product = get_object_or_404(Product, pk=product_id)
+    product.delete()
+    return HttpResponseRedirect(reverse('main:show_main'))
+
 @login_required(login_url='/login')
 def show_main(request: HttpRequest):
     filter_type = request.GET.get("filter", "all")  # default 'all'

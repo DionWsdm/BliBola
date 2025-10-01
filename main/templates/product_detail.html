@@ -1,31 +1,48 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<p><a href="{% url 'main:show_main' %}"><button>← Back to Product List</button></a></p>
+<div class="w-full min-h-screen bg-[#181818] text-white py-10 px-6">
+  
+  <!-- Back Button -->
+  <div class="mb-6">
+    <a href="{% url 'main:show_main' %}" 
+       class="inline-flex items-center px-4 py-2 bg-[#2A2A2A] border border-[#4A4A4A] text-gray-300 rounded-lg hover:bg-green-600 hover:text-white transition-colors">
+      ← Back to Product List
+    </a>
+  </div>
 
-<h1>{{ product.title }}</h1>
-<p><b>{{ product.get_category_display }}</b>
-    {% if product.is_featured %} | 
-    <b>Featured</b>
+  <!-- Product Detail Card -->
+  <div class="max-w-4xl mx-auto bg-[#1F1F1F] rounded-2xl shadow-lg border border-[#2F2F2F] p-8">
+    
+    <!-- Product Title -->
+    <h1 class="text-3xl font-bold mb-2">{{ product.title }}</h1>
+    
+    <!-- Product Meta Info -->
+    <p class="text-gray-400 mb-4">
+      <span class="font-semibold text-green-500">{{ product.get_category_display }}</span>
+      {% if product.is_featured %}
+        | <span class="text-yellow-400 font-semibold">Featured</span>
+      {% endif %}
+      | <span class="text-sm">Stock: {{ product.stock }}</span>
+    </p>
+
+    <!-- Product Thumbnail -->
+    {% if product.thumbnail %}
+      <div class="w-full mb-6 flex justify-center">
+        <img src="{{ product.thumbnail }}" alt="product thumbnail" class="rounded-xl shadow-lg max-h-96 object-cover">
+      </div>
     {% endif %}
-    <i>{{ news.created_at|date:"d M Y, H:i" }}</i> 
-    | Stock: {{ product.stock }}
-</p>
 
-{% if product.thumbnail %}
-<img src="{{ product.thumbnail }}" alt="product thumbnail" width="300">
-<br /><br />
-{% endif %}
+    <!-- Product Description -->
+    <div class="prose prose-invert max-w-none mb-6">
+      <p class="text-lg leading-relaxed text-gray-200">{{ product.description }}</p>
+      <div class="mt-4">{{ product.content|safe }}</div>
+    </div>
 
-<p>
-    {{ product.description }}
-</p>
-
-<p>{{ product.content }}</p>
-
-{% if product.user %}
-    <p>Seller: {{ product.user.username }}</p>
-{% else %}
-    <p>Seller: Anonymous</p>
-{% endif %}
-
+    <!-- Seller Info -->
+    <div class="mt-6 flex items-center gap-3 text-gray-300">
+      <p>Seller: {% if product.user %} {{ product.user.username }} {% else %} Anonymous {% endif %}</p>
+    </div>
+  </div>
+</div>
 {% endblock content %}
