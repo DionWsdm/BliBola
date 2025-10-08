@@ -24,23 +24,37 @@
       </div>
       
       <form method="POST" class="space-y-6">
-        {% csrf_token %}
-        {% for field in form %}
-          <div>
-            <label for="{{ field.id_for_label }}" class="block text-sm font-medium mb-2">
-              {{ field.label }}
-            </label>
-            <div class="w-full">
-              {{ field }}
-            </div>
-            {% if field.help_text %}
-              <p class="mt-1 text-sm">{{ field.help_text }}</p>
-            {% endif %}
-            {% for error in field.errors %}
-              <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-            {% endfor %}
+        <div class="mb-4">
+          <label for="name" class="block text-sm font-medium text-white">Name</label>
+          <input type="text" id="name" name="name" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Enter product title" required>
+        </div>
+        <div class="mb-4">
+          <label for="description" class="block text-sm font-medium text-white">Description</label>
+          <textarea id="description" name="description" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Enter product content" required></textarea>
+        </div>
+        <div class="mb-4">
+          <label for="category" class="block text-sm font-medium text-white">Category</label>
+          <select id="category" name="category" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" required>
+            <option value="">Choose a category</option>
+            <option value="transfer">Apparel</option>
+            <option value="update">Footwear</option>
+            <option value="exclusive">Gear</option>
+            <option value="match">Accessories</option>
+            <option value="rumor">Equipment</option>
+            <option value="analysis">Merch</option>
+            <option value="analysis">Tools</option>
+          </select>
+        </div>
+        <div class="mb-4">
+          <label for="thumbnail" class="block text-sm font-medium text-white">Thumbnail URL</label>
+          <input type="url" id="thumbnail" name="thumbnail" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="https://example.com/image.jpg">
+        </div>
+        <div class="mb-4">
+          <div class="flex items-center">
+            <input id="is_featured" name="is_featured" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded">
+            <label for="is_featured" class="ml-2 text-sm font-medium text-gray-900">Featured Product</label>
           </div>
-        {% endfor %}
+        </div>
         
         <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
           <a href="{% url 'main:show_main' %}" class="order-2 sm:order-1 px-6 py-3 border border-gray-300 rounded-md font-medium transition-colors text-center">

@@ -1,0 +1,15 @@
+{% load static %}
+<div 
+    class="flex items-center fixed bottom-8 right-8 rounded-xl shadow-xl z-50 bg-[#2A2A2A] transition-all duration-300 translate-y-64 gap-4"
+    id="toast-component"
+>
+    <div class="bg-[#2A2A2A] w-full h-full w-[200px] h-[40px]">
+        <h3 class="font-bold text-white" id="toast-title">
+            This is a Sample Title
+        </h3>
+        <p class="text-white text-sm line-clamp-3" id="toast-message">
+            This is a Sample Message
+        </p>
+    </div>
+</div>
+<script src="{% static 'js/toast.js' %}"></script>

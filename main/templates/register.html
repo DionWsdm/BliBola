@@ -38,7 +38,7 @@
         <p>Create your BliBola account!</p>
       </div>
 
-      <form method="POST" action="">
+      <form id="register-form">
         {% csrf_token %}
         <div class="flex flex-col gap-6 w-96">
           <div class="flex flex-col gap-1">
@@ -57,25 +57,7 @@
         </div>
       </form>
 
-      {% if messages %}
-          <div class="mt-6">
-            {% for message in messages %}
-              <div 
-                class="
-                  px-4 py-3 rounded-md text-sm border
-                  {% if message.tags == 'success' %}
-                    bg-green-50 border-green-200 text-green-700
-                  {% elif message.tags == 'error' %}
-                    bg-red-50 border-red-200 text-red-700
-                  {% else %}
-                    bg-gray-50 border-gray-200 text-gray-700
-                  {% endif %}
-                ">
-                {{ message }}
-              </div>
-            {% endfor %}
-          </div>
-      {% endif %}
+      <div id="error-messages" class="mt-4 w-96"></div>
         
       <div class="flex flex-col pt-5 gap-1 border-t border-[#4A4A4A] w-96 text-center">
         <p>Already have an account?</p>
@@ -84,5 +66,57 @@
     </div>
   </div>
 </div>
+
+<script>
+  const LOGIN_ENDPOINT = "{% url 'main:register' %}";
+
+  const form = document.getElementById('register-form');
+  const errorContainer = document.getElementById('error-messages');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Ambil input
+    const username = document.getElementById('username').value;
+    const password1 = document.getElementById('password1').value;
+    const password2 = document.getElementById('password2').value;
+
+    // Ambil CSRF token dari form
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    try {
+      const response = await fetch(LOGIN_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({ username, password1, password2 }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        window.location.href = data.redirect_url;
+      } else {
+        const data = await response.json();
+        displayErrors(data.errors);
+      }
+    } catch (err) {
+      console.error('Error during login:', err);
+    }
+  });
+
+  function displayErrors(errors) {
+    errorContainer.innerHTML = '';
+    for (const [field, messages] of Object.entries(errors)) {
+      messages.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = 'px-4 py-3 rounded-md text-sm border bg-red-50 border-red-200 text-red-700 mb-2';
+        div.textContent = `${field}: ${msg}`;
+        errorContainer.appendChild(div);
+      });
+    }
+  }
+</script>
 
 {% endblock content %}

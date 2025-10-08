@@ -1,16 +1,44 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.core import serializers
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 from .models import Product
 from .forms import ProductForm
 from django.urls import reverse
 import datetime
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 # Create your views here.
+
+
+@csrf_exempt
+@require_POST
+def add_product_entry_ajax(request: HttpRequest):
+    name = request.POST.get("name")
+    description = request.POST.get("description")
+    category = request.POST.get("category")
+    thumbnail = request.POST.get("thumbnail")
+    stock = request.POST.get("stock")
+    is_featured = request.POST.get("is_featured") == 'on'
+    user = request.user
+
+    new_news = Product(
+        name=name, 
+        description=description,
+        category=category,
+        stock = stock,
+        thumbnail=thumbnail,
+        is_featured=is_featured,
+        user=user
+    )
+    new_news.save()
+
+    return HttpResponse(b"CREATED", status=201)
+
 def edit_product(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
     form = ProductForm(request.POST or None, instance=product)
@@ -70,9 +98,16 @@ def show_xml(request: HttpRequest):
     return HttpResponse(xml_data, content_type="application/xml")
 
 def show_json(request: HttpRequest):
-    product_list = Product.objects.all()
-    json_data = serializers.serialize("json", product_list)
-    return HttpResponse(json_data, content_type="application/json")
+    products = Product.objects.all().values(
+        "id",
+        "name",
+        "price",
+        "stock",
+        "description",
+        "thumbnail",   # pastikan nama field sesuai dengan model kamu
+        "user",
+    )
+    return JsonResponse(list(products), safe=False)
 
 def show_xml_by_id(request: HttpRequest, product_id):
     try:
@@ -83,39 +118,40 @@ def show_xml_by_id(request: HttpRequest, product_id):
         return HttpResponse(status=404)
 
 def show_json_by_id(request: HttpRequest, product_id):
+    print("product_id: "+product_id)
     try:
-        product_item = Product.objects.filter(pk=product_id)
-        json_data = serializers.serialize("json", product_item)
-        return HttpResponse(json_data, content_type="application/json")
+        products = Product.objects.filter(pk=product_id).values()
+        return JsonResponse(list(products), safe=False)
     except Product.DoesNotExist:
-        return HttpResponse(status=404)
+        return JsonResponse({"message": "Not Found"}, status=404)
     
-def register(request):
-    form = UserCreationForm()
-
+def register(request: HttpRequest):
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        data = json.loads(request.body)
+        form = UserCreationForm(data)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Your account has been successfully created!')
-            return redirect('main:login')
-    context = {'form':form}
-    return render(request, 'register.html', context)
+            return JsonResponse({ 
+                "message": 'Your account has been successfully created!',
+                "redirect_url": reverse('main:login'),
+            }, status=201)
+        else:
+            return JsonResponse({ "errors": form.errors }, status=400)
+    return render(request, 'register.html', {})
 
-def login_user(request):
+def login_user(request: HttpRequest):
     if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST)
+        data = json.loads(request.body)
+        form = AuthenticationForm(request, data=data)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            response = HttpResponseRedirect(reverse("main:show_main"))
+            response = JsonResponse({"redirect_url": reverse("main:show_main")}, status=200)
             response.set_cookie('last_login', str(datetime.datetime.now()))
             return response
-
-    else:
-        form = AuthenticationForm(request)
-    context = {'form': form}
-    return render(request, 'login.html', context)
+        else:
+            return JsonResponse({ "errors": form.errors }, status=400)
+    return render(request, 'login.html', {})
 
 def logout_user(request):
     logout(request)

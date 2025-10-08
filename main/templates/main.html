@@ -2,70 +2,163 @@
 {% load static %}
 
 {% block meta %}
-<title>Football News</title>
+<title>Football Products</title>
 {% endblock meta %}
 
 {% block content %}
 {% include 'navbar.html' %}
+{% include 'modal.html' %}
+
 <div class="w-full pt-16 min-h-screen bg-[#181818]">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-white">
 
-    <!-- Header Section -->
+    <!-- Header -->
     <div class="mb-8 text-center sm:text-left">
       <h1 class="text-3xl font-bold mb-2">Latest Added Product</h1>
       <p class="text-gray-300">Enhance your football experience with our best product!</p>
     </div>
 
-    <!-- Filter Section -->
+    <!-- Button to open modal -->
+    <button onclick="showModal()" class="inline-flex items-center px-4 py-2 bg-[#181818] text-blue-600 font-semibold outline outline-2 outline-blue-600 outline-offset-[-2px] rounded-md hover:bg-blue-600 hover:text-white transition-colors mb-4">
+      Add Product by AJAX
+    </button>
+
+    <!-- Filter -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 bg-[#2A2A2A] rounded-lg border border-[#4A4A4A] p-4 gap-3 sm:gap-0">
       <div class="flex flex-wrap gap-3">
-        <a href="?" 
-           class="{% if request.GET.filter == 'all' or not request.GET.filter %} 
-                     bg-blue-700 text-white 
-                   {% else %} 
-                     bg-[#2A2A2A] text-gray-300 border border-[#4A4A4A] 
-                   {% endif %} 
-                   px-4 py-2 rounded-md font-medium transition-colors hover:bg-blue-700 hover:text-white">
+        <button id="filter-all" class="bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors hover:bg-blue-800">
           All Product
-        </a>
-        <a href="?filter=my" 
-           class="{% if request.GET.filter == 'my' %} 
-                     bg-blue-700 text-white 
-                   {% else %} 
-                     bg-[#2A2A2A] text-gray-300 border border-[#4A4A4A] 
-                   {% endif %} 
-                   px-4 py-2 rounded-md font-medium transition-colors hover:bg-blue-700 hover:text-white">
+        </button>
+        <button id="filter-my" class="bg-[#2A2A2A] text-gray-300 border border-[#4A4A4A] px-4 py-2 rounded-md font-medium transition-colors hover:bg-blue-700 hover:text-white">
           My Product
-        </a>
+        </button>
       </div>
-      {% if user.is_authenticated %}
-        <div class="text-sm text-gray-400 mt-2 sm:mt-0 text-center sm:text-right">
-          Last login: {{ last_login }}
-        </div>
-      {% endif %}
+      <div class="text-sm text-gray-400 mt-2 sm:mt-0 text-center sm:text-right">
+        Last login: {{ last_login }}
+      </div>
     </div>
 
-    <!-- Product Grid / Empty State -->
-    {% if not product_list %}
-      <div class="bg-[#2A2A2A] rounded-lg border border-[#4A4A4A] p-12 text-center">
-        <div class="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-4">
-          <img src="{% static 'image/no-product.png' %}" alt="No news available" class="w-full h-full object-contain">
-        </div>
-        <h3 class="text-lg font-semibold text-white mb-2">No product found</h3>
-        <p class="text-gray-400 mb-6">Be the first to share football product with the community.</p>
-        <a href="{% url 'main:create_product' %}" 
-           class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-          Create Product
-        </a>
+    <!-- Loading -->
+    <div id="loading" class="text-center py-10">Loading...</div>
+
+    <!-- Error -->
+    <div id="error" class="hidden text-center text-red-400 py-10">Failed to load products.</div>
+
+    <!-- Empty -->
+    <div id="empty" class="hidden bg-[#2A2A2A] rounded-lg border border-[#4A4A4A] p-12 text-center">
+      <div class="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-4">
+        <img src="{% static 'image/no-product.png' %}" alt="No product available" class="w-full h-full object-contain">
       </div>
-    {% else %}
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 gap-y-8">
-        {% for product in product_list %}
-          {% include 'card_product.html' with product=product %}
-        {% endfor %}
-      </div>
-    {% endif %}
+      <h3 class="text-lg font-semibold text-white mb-2">No product found</h3>
+      <p class="text-gray-400 mb-6">Be the first to share football products with the community.</p>
+    </div>
+
+    <!-- Product Grid -->
+    <div id="grid" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6 gap-y-8 w-full items-center"></div>
 
   </div>
 </div>
+
+<script>
+const ENDPOINT = "{% url 'main:show_json' %}";
+const CURRENT_USER_ID = "{{ user.id }}";
+let allProducts = [];
+let activeFilter = 'all';
+
+const loadingEl = document.getElementById('loading');
+const errorEl = document.getElementById('error');
+const emptyEl = document.getElementById('empty');
+const gridEl = document.getElementById('grid');
+const filterAllBtn = document.getElementById('filter-all');
+const filterMyBtn = document.getElementById('filter-my');
+
+// Add event listener to detect new product
+document.addEventListener('Added', function() {
+    fetchProducts();
+  });
+
+function showSection(section) {
+  loadingEl.classList.add('hidden');
+  errorEl.classList.add('hidden');
+  emptyEl.classList.add('hidden');
+  gridEl.classList.add('hidden');
+  if (section === 'loading') loadingEl.classList.remove('hidden');
+  if (section === 'error') errorEl.classList.remove('hidden');
+  if (section === 'empty') emptyEl.classList.remove('hidden');
+  if (section === 'grid') gridEl.classList.remove('hidden');
+}
+
+function buildCard(product) {
+  const div = document.createElement('div');
+  div.className = "flex w-80 lg:w-96 rounded-lg border-[#4A4A4A] border-[0.5px] py-3 lg:py-5 bg-[#181818]";
+
+  const imgHtml = product.thumbnail 
+    ? `<img src="${product.thumbnail}" alt="${product.name}" class="w-full h-[200px] object-cover">`
+    : '';
+
+  div.innerHTML = `
+  <div class="flex flex-col w-[300px] lg:w-[350px] mx-auto gap-4">
+    ${imgHtml}
+    <div class="flex flex-row w-full">
+      <p class="w-[250px] text-xl">${product.name}</p>
+      <a href="/product/${product.id}/" class="w-[100px] border-blue-700 border py-2 px-2 rounded-lg text-blue-700">View Detail</a>
+    </div>
+    <p class="text-xl">Stock: ${product.stock}</p>
+    <p class="text-xl font-bold">IDR ${product.price}</p>
+    <div class="pt-5 border-t border-[#4A4A4A]">
+      ${product.description.slice(0, 100)}...
+    </div>
+    ${product.user_id == CURRENT_USER_ID 
+      ? `<div class="flex justify-between pt-4 border-t border-[#4A4A4A]">
+          <a href="/edit-product/${product.id}/" class="bg-blue-700 hover:bg-blue-800 text-white text-sm w-[48%] text-center py-2">Edit</a>
+          <a href="/delete-product/${product.id}/" class="bg-red-500 hover:bg-red-700 text-white text-sm w-[48%] text-center py-2">Delete</a>
+        </div>`
+      : `<button class="h-10 w-full bg-[#8B5CF6] hover:bg-[#7B4CE6] rounded-[4px]">Buy Now</button>`
+    }
+  </div>
+  `;
+  return div;
+}
+
+function renderProducts(products) {
+  gridEl.innerHTML = '';
+  products.forEach(p => gridEl.appendChild(buildCard(p)));
+}
+
+function filterProducts() {
+  const filtered = activeFilter === 'all' 
+    ? allProducts 
+    : allProducts.filter(p => p.user_id == CURRENT_USER_ID);
+
+  if (filtered.length === 0) {
+    showSection('empty');
+  } else {
+    renderProducts(filtered);
+    showSection('grid');
+  }
+}
+
+async function fetchProducts() {
+  try {
+    showSection('loading');
+    const res = await fetch(ENDPOINT);
+    if (!res.ok) throw new Error();
+    allProducts = await res.json();
+    filterProducts();
+  } catch {
+    showSection('error');
+  }
+}
+
+filterAllBtn.addEventListener('click', () => {
+  activeFilter = 'all';
+  filterProducts();
+});
+filterMyBtn.addEventListener('click', () => {
+  activeFilter = 'my';
+  filterProducts();
+});
+
+document.addEventListener('DOMContentLoaded', fetchProducts);
+</script>
 {% endblock content %}
